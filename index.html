@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SmartCampus</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-icon">⬡</div>
+      <div>
+        <div class="brand-name">SmartCampus</div>
+        <div class="brand-tagline">Campus Inteligente</div>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-section="library">
+        <span class="nav-icon">📚</span>
+        <span class="nav-label">Biblioteca</span>
+      </button>
+      <button class="nav-item" data-section="bathrooms">
+        <span class="nav-icon">🚻</span>
+        <span class="nav-label">Baños</span>
+        <span class="nav-badge" id="bath-badge"></span>
+      </button>
+      <button class="nav-item" data-section="outlets">
+        <span class="nav-icon">🔌</span>
+        <span class="nav-label">Enchufes</span>
+      </button>
+      <button class="nav-item" data-section="wifi">
+        <span class="nav-icon">📶</span>
+        <span class="nav-label">Señal WiFi</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="status-dot" id="api-status-dot"></div>
+      <span id="api-status-text">Conectando…</span>
+    </div>
+  </aside>
+
+  <!-- MOBILE TOPBAR -->
+  <header class="topbar">
+    <button class="menu-btn" id="menuBtn">☰</button>
+    <span class="topbar-title">SmartCampus</span>
+    <div class="status-dot small" id="api-status-dot-mobile"></div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
+
+    <!-- ══════════════ LIBRARY SECTION ══════════════ -->
+    <section class="section active" id="section-library">
+      <div class="section-header">
+        <h1 class="section-title">Ocupación Biblioteca</h1>
+        <span class="section-meta" id="library-updated">—</span>
+      </div>
+
+      <div class="cards-grid">
+        <!-- Big occupancy card -->
+        <div class="card card-hero" id="lib-hero-card">
+          <div class="card-label">Estado actual</div>
+          <div class="semaphore-wrap">
+            <div class="semaphore" id="semaphore">
+              <div class="sem-light" id="sem-red"></div>
+              <div class="sem-light" id="sem-yellow"></div>
+              <div class="sem-light" id="sem-green"></div>
+            </div>
+            <div class="occ-info">
+              <div class="occ-number" id="occ-number">—</div>
+              <div class="occ-label">estudiantes</div>
+              <div class="occ-status-badge" id="occ-status-badge">—</div>
+            </div>
+          </div>
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-track">
+              <div class="progress-bar-fill" id="occ-bar"></div>
+            </div>
+            <div class="progress-labels">
+              <span>0</span>
+              <span id="occ-capacity-label">/ —</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats mini cards -->
+        <div class="card card-stat">
+          <div class="card-label">Capacidad total</div>
+          <div class="stat-value" id="lib-capacity">—</div>
+          <div class="stat-sub">espacios</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Disponibles ahora</div>
+          <div class="stat-value" id="lib-available">—</div>
+          <div class="stat-sub">lugares libres</div>
+        </div>
+      </div>
+
+      <!-- Floor breakdown -->
+      <div class="card mt-2">
+        <div class="card-label">Desglose por piso</div>
+        <div class="floors-list" id="floors-list"></div>
+      </div>
+
+      <!-- Occupancy history chart -->
+      <div class="card mt-2">
+        <div class="card-label">Histórico del día</div>
+        <div class="chart-wrap">
+          <canvas id="history-chart" height="120"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- ══════════════ BATHROOMS SECTION ══════════════ -->
+    <section class="section" id="section-bathrooms">
+      <div class="section-header">
+        <h1 class="section-title">Reporte de Baños</h1>
+        <button class="btn-primary" id="openReportModal">+ Nuevo Reporte</button>
+      </div>
+
+      <div class="cards-grid bathroom-stats" id="bathroom-stats-grid">
+        <div class="card card-stat">
+          <div class="card-label">Reportes activos</div>
+          <div class="stat-value" id="bath-total">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">En proceso</div>
+          <div class="stat-value" id="bath-inprogress">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Votos totales</div>
+          <div class="stat-value" id="bath-votes">—</div>
+        </div>
+      </div>
+
+      <div class="reports-list" id="reports-list">
+        <div class="loading-state">Cargando reportes…</div>
+      </div>
+    </section>
+
+    <!-- ══════════════ OUTLETS SECTION ══════════════ -->
+    <section class="section" id="section-outlets">
+      <div class="section-header">
+        <h1 class="section-title">Mapa de Enchufes</h1>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card card-stat">
+          <div class="card-label">Disponibles</div>
+          <div class="stat-value green" id="out-available">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Ocupados</div>
+          <div class="stat-value red" id="out-occupied">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Total</div>
+          <div class="stat-value" id="out-total">—</div>
+        </div>
+      </div>
+
+      <div class="card mt-2">
+        <div class="card-label">Plano del Campus — Enchufes</div>
+        <div class="campus-map-wrap">
+          <div class="campus-map" id="outlets-map">
+            <!-- SVG campus + pins rendered by JS -->
+          </div>
+        </div>
+        <div class="map-legend">
+          <span class="legend-dot green"></span> Disponible &nbsp;
+          <span class="legend-dot red"></span> Ocupado
+        </div>
+      </div>
+
+      <div class="card mt-2">
+        <div class="card-label">Lista de enchufes</div>
+        <div class="outlets-list" id="outlets-list"></div>
+      </div>
+    </section>
+
+    <!-- ══════════════ WIFI SECTION ══════════════ -->
+    <section class="section" id="section-wifi">
+      <div class="section-header">
+        <h1 class="section-title">Zonas WiFi</h1>
+      </div>
+
+      <div class="cards-grid">
+        <div class="card card-stat">
+          <div class="card-label">Zonas excelentes</div>
+          <div class="stat-value green" id="wifi-excellent">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Zonas buenas</div>
+          <div class="stat-value" id="wifi-good">—</div>
+        </div>
+        <div class="card card-stat">
+          <div class="card-label">Señal débil</div>
+          <div class="stat-value red" id="wifi-poor">—</div>
+        </div>
+      </div>
+
+      <div class="card mt-2">
+        <div class="card-label">Cobertura del Campus</div>
+        <div class="campus-map-wrap">
+          <div class="campus-map" id="wifi-map"></div>
+        </div>
+        <div class="map-legend">
+          <span class="legend-dot" style="background:#00e5a0"></span> Excelente (&gt;80%)&nbsp;
+          <span class="legend-dot" style="background:#f5c518"></span> Buena (&gt;60%)&nbsp;
+          <span class="legend-dot" style="background:#ff6b35"></span> Regular (&gt;40%)&nbsp;
+          <span class="legend-dot" style="background:#ff2d55"></span> Débil
+        </div>
+      </div>
+
+      <div class="wifi-zones-grid" id="wifi-zones-list"></div>
+    </section>
+
+  </main>
+
+  <!-- ══════════════ MODAL: NEW BATHROOM REPORT ══════════════ -->
+  <div class="modal-overlay" id="reportModal">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Reportar Baño</h2>
+        <button class="modal-close" id="closeReportModal">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="field-label">Ubicación</label>
+        <select class="field-input" id="report-location">
+          <option value="">Selecciona una ubicación…</option>
+          <option>Edificio A – Planta Baja</option>
+          <option>Edificio A – Primer Piso</option>
+          <option>Edificio B – Planta Baja</option>
+          <option>Biblioteca – Primer Piso</option>
+          <option>Cafetería – Hombres</option>
+          <option>Cafetería – Mujeres</option>
+          <option>Gimnasio</option>
+          <option>Auditorio</option>
+        </select>
+        <label class="field-label mt-1">Descripción del problema</label>
+        <textarea class="field-input" id="report-description" rows="3" placeholder="Describe el problema…"></textarea>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-ghost" id="cancelReport">Cancelar</button>
+        <button class="btn-primary" id="submitReport">Enviar Reporte</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
