@@ -1,261 +1,288 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SmartCampus</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&family=DM+Mono:wght@400;500&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;0,9..144,700;1,9..144,300&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <!-- SIDEBAR -->
-  <aside class="sidebar" id="sidebar">
-    <div class="sidebar-brand">
-      <div class="brand-icon">⬡</div>
-      <div>
-        <div class="brand-name">SmartCampus</div>
-        <div class="brand-tagline">Campus Inteligente</div>
+
+  <!-- AMBIENT BACKGROUND -->
+  <div class="ambient" aria-hidden="true">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- TOP HEADER -->
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="topbar-brand">
+        <div class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+            <path d="M11 2L19.5 7V15L11 20L2.5 15V7L11 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M11 8L14.5 10V14L11 16L7.5 14V10L11 8Z" fill="currentColor" opacity="0.7"/>
+          </svg>
+        </div>
+        <div>
+          <span class="brand-name">SmartCampus</span>
+          <span class="brand-sub">Universidad</span>
+        </div>
+      </div>
+      <div class="api-pill" id="api-pill">
+        <span class="api-dot" id="api-dot"></span>
+        <span id="api-label">…</span>
       </div>
     </div>
-
-    <nav class="sidebar-nav">
-      <button class="nav-item active" data-section="library">
-        <span class="nav-icon">📚</span>
-        <span class="nav-label">Biblioteca</span>
-      </button>
-      <button class="nav-item" data-section="bathrooms">
-        <span class="nav-icon">🚻</span>
-        <span class="nav-label">Baños</span>
-        <span class="nav-badge" id="bath-badge"></span>
-      </button>
-      <button class="nav-item" data-section="outlets">
-        <span class="nav-icon">🔌</span>
-        <span class="nav-label">Enchufes</span>
-      </button>
-      <button class="nav-item" data-section="wifi">
-        <span class="nav-icon">📶</span>
-        <span class="nav-label">Señal WiFi</span>
-      </button>
-    </nav>
-
-    <div class="sidebar-footer">
-      <div class="status-dot" id="api-status-dot"></div>
-      <span id="api-status-text">Conectando…</span>
-    </div>
-  </aside>
-
-  <!-- MOBILE TOPBAR -->
-  <header class="topbar">
-    <button class="menu-btn" id="menuBtn">☰</button>
-    <span class="topbar-title">SmartCampus</span>
-    <div class="status-dot small" id="api-status-dot-mobile"></div>
   </header>
 
   <!-- MAIN CONTENT -->
-  <main class="main-content">
+  <main class="content">
 
-    <!-- ══════════════ LIBRARY SECTION ══════════════ -->
-    <section class="section active" id="section-library">
-      <div class="section-header">
-        <h1 class="section-title">Ocupación Biblioteca</h1>
-        <span class="section-meta" id="library-updated">—</span>
+    <!-- ══ LIBRARY ══ -->
+    <section class="view active" id="view-library">
+      <div class="view-hero">
+        <p class="view-eyebrow">Estado actual</p>
+        <h1 class="view-title">Biblioteca</h1>
       </div>
 
-      <div class="cards-grid">
-        <!-- Big occupancy card -->
-        <div class="card card-hero" id="lib-hero-card">
-          <div class="card-label">Estado actual</div>
-          <div class="semaphore-wrap">
-            <div class="semaphore" id="semaphore">
-              <div class="sem-light" id="sem-red"></div>
-              <div class="sem-light" id="sem-yellow"></div>
-              <div class="sem-light" id="sem-green"></div>
-            </div>
-            <div class="occ-info">
-              <div class="occ-number" id="occ-number">—</div>
-              <div class="occ-label">estudiantes</div>
-              <div class="occ-status-badge" id="occ-status-badge">—</div>
-            </div>
-          </div>
-          <div class="progress-bar-wrap">
-            <div class="progress-bar-track">
-              <div class="progress-bar-fill" id="occ-bar"></div>
-            </div>
-            <div class="progress-labels">
-              <span>0</span>
-              <span id="occ-capacity-label">/ —</span>
-            </div>
+      <div class="card card-semaphore" id="sem-card">
+        <div class="sem-left">
+          <div class="sem-housing">
+            <div class="sem-bulb" id="sem-red"></div>
+            <div class="sem-bulb" id="sem-yellow"></div>
+            <div class="sem-bulb" id="sem-green"></div>
           </div>
         </div>
-
-        <!-- Stats mini cards -->
-        <div class="card card-stat">
-          <div class="card-label">Capacidad total</div>
-          <div class="stat-value" id="lib-capacity">—</div>
-          <div class="stat-sub">espacios</div>
+        <div class="sem-center">
+          <div class="sem-big" id="occ-number">—</div>
+          <div class="sem-sub">de <strong id="occ-capacity">—</strong> lugares</div>
+          <div class="sem-badge" id="occ-badge">Cargando…</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Disponibles ahora</div>
-          <div class="stat-value" id="lib-available">—</div>
-          <div class="stat-sub">lugares libres</div>
+        <div class="sem-right">
+          <div class="donut-wrap">
+            <svg class="donut" viewBox="0 0 80 80">
+              <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
+              <circle id="donut-fill" cx="40" cy="40" r="30" fill="none" stroke="var(--green)" stroke-width="10"
+                stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                transform="rotate(-90 40 40)" style="transition:stroke-dashoffset 1s ease,stroke .5s ease"/>
+            </svg>
+            <span class="donut-pct" id="donut-pct">0%</span>
+          </div>
         </div>
       </div>
 
-      <!-- Floor breakdown -->
-      <div class="card mt-2">
-        <div class="card-label">Desglose por piso</div>
-        <div class="floors-list" id="floors-list"></div>
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="stat-chip-val green" id="lib-free">—</div>
+          <div class="stat-chip-lbl">Libres</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="lib-cap">—</div>
+          <div class="stat-chip-lbl">Capacidad</div>
+        </div>
+        <div class="stat-chip">
+          <div class="stat-chip-val mono" id="lib-time">—</div>
+          <div class="stat-chip-lbl">Actualizado</div>
+        </div>
       </div>
 
-      <!-- Occupancy history chart -->
-      <div class="card mt-2">
-        <div class="card-label">Histórico del día</div>
-        <div class="chart-wrap">
-          <canvas id="history-chart" height="120"></canvas>
-        </div>
+      <p class="section-label">Ocupación por piso</p>
+      <div class="card" style="padding:20px 24px">
+        <div id="floors-list" class="floors-list"></div>
+      </div>
+
+      <p class="section-label">Tráfico del día</p>
+      <div class="card chart-card">
+        <canvas id="history-chart" height="90"></canvas>
       </div>
     </section>
 
-    <!-- ══════════════ BATHROOMS SECTION ══════════════ -->
-    <section class="section" id="section-bathrooms">
-      <div class="section-header">
-        <h1 class="section-title">Reporte de Baños</h1>
-        <button class="btn-primary" id="openReportModal">+ Nuevo Reporte</button>
+    <!-- ══ BATHROOMS ══ -->
+    <section class="view" id="view-bathrooms">
+      <div class="view-hero">
+        <p class="view-eyebrow">Reportes comunitarios</p>
+        <h1 class="view-title">Baños</h1>
+        <button class="btn-hero" id="openModal">
+          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+          Nuevo reporte
+        </button>
       </div>
 
-      <div class="cards-grid bathroom-stats" id="bathroom-stats-grid">
-        <div class="card card-stat">
-          <div class="card-label">Reportes activos</div>
-          <div class="stat-value" id="bath-total">—</div>
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="stat-chip-val red" id="bath-total">—</div>
+          <div class="stat-chip-lbl">Activos</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">En proceso</div>
-          <div class="stat-value" id="bath-inprogress">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val yellow" id="bath-progress">—</div>
+          <div class="stat-chip-lbl">En proceso</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Votos totales</div>
-          <div class="stat-value" id="bath-votes">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="bath-votes">—</div>
+          <div class="stat-chip-lbl">Votos</div>
         </div>
       </div>
 
-      <div class="reports-list" id="reports-list">
-        <div class="loading-state">Cargando reportes…</div>
-      </div>
+      <p class="section-label">Mayor urgencia primero</p>
+      <div id="reports-list" class="reports-list"></div>
     </section>
 
-    <!-- ══════════════ OUTLETS SECTION ══════════════ -->
-    <section class="section" id="section-outlets">
-      <div class="section-header">
-        <h1 class="section-title">Mapa de Enchufes</h1>
+    <!-- ══ OUTLETS ══ -->
+    <section class="view" id="view-outlets">
+      <div class="view-hero">
+        <p class="view-eyebrow">Infraestructura</p>
+        <h1 class="view-title">Enchufes</h1>
       </div>
 
-      <div class="cards-grid">
-        <div class="card card-stat">
-          <div class="card-label">Disponibles</div>
-          <div class="stat-value green" id="out-available">—</div>
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="stat-chip-val green" id="out-avail">—</div>
+          <div class="stat-chip-lbl">Disponibles</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Ocupados</div>
-          <div class="stat-value red" id="out-occupied">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val red" id="out-occ">—</div>
+          <div class="stat-chip-lbl">Ocupados</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Total</div>
-          <div class="stat-value" id="out-total">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val" id="out-total">—</div>
+          <div class="stat-chip-lbl">Total</div>
         </div>
       </div>
 
-      <div class="card mt-2">
-        <div class="card-label">Plano del Campus — Enchufes</div>
-        <div class="campus-map-wrap">
-          <div class="campus-map" id="outlets-map">
-            <!-- SVG campus + pins rendered by JS -->
-          </div>
-        </div>
+      <p class="section-label">Plano del campus · toca para cambiar estado</p>
+      <div class="card map-card">
+        <div class="campus-map-container" id="outlets-map"></div>
         <div class="map-legend">
-          <span class="legend-dot green"></span> Disponible &nbsp;
-          <span class="legend-dot red"></span> Ocupado
+          <span class="leg"><span class="leg-dot green"></span>Disponible</span>
+          <span class="leg"><span class="leg-dot red"></span>Ocupado</span>
         </div>
       </div>
 
-      <div class="card mt-2">
-        <div class="card-label">Lista de enchufes</div>
-        <div class="outlets-list" id="outlets-list"></div>
-      </div>
+      <p class="section-label">Lista de enchufes</p>
+      <div class="outlets-grid" id="outlets-grid"></div>
     </section>
 
-    <!-- ══════════════ WIFI SECTION ══════════════ -->
-    <section class="section" id="section-wifi">
-      <div class="section-header">
-        <h1 class="section-title">Zonas WiFi</h1>
+    <!-- ══ WIFI ══ -->
+    <section class="view" id="view-wifi">
+      <div class="view-hero">
+        <p class="view-eyebrow">Conectividad</p>
+        <h1 class="view-title">Señal WiFi</h1>
       </div>
 
-      <div class="cards-grid">
-        <div class="card card-stat">
-          <div class="card-label">Zonas excelentes</div>
-          <div class="stat-value green" id="wifi-excellent">—</div>
+      <div class="stats-row">
+        <div class="stat-chip">
+          <div class="stat-chip-val green" id="wifi-exc">—</div>
+          <div class="stat-chip-lbl">Excelente</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Zonas buenas</div>
-          <div class="stat-value" id="wifi-good">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val yellow" id="wifi-good">—</div>
+          <div class="stat-chip-lbl">Buena</div>
         </div>
-        <div class="card card-stat">
-          <div class="card-label">Señal débil</div>
-          <div class="stat-value red" id="wifi-poor">—</div>
+        <div class="stat-chip">
+          <div class="stat-chip-val red" id="wifi-poor">—</div>
+          <div class="stat-chip-lbl">Débil</div>
         </div>
       </div>
 
-      <div class="card mt-2">
-        <div class="card-label">Cobertura del Campus</div>
-        <div class="campus-map-wrap">
-          <div class="campus-map" id="wifi-map"></div>
-        </div>
+      <p class="section-label">Mapa de cobertura</p>
+      <div class="card map-card">
+        <div class="campus-map-container" id="wifi-map"></div>
         <div class="map-legend">
-          <span class="legend-dot" style="background:#00e5a0"></span> Excelente (&gt;80%)&nbsp;
-          <span class="legend-dot" style="background:#f5c518"></span> Buena (&gt;60%)&nbsp;
-          <span class="legend-dot" style="background:#ff6b35"></span> Regular (&gt;40%)&nbsp;
-          <span class="legend-dot" style="background:#ff2d55"></span> Débil
+          <span class="leg"><span class="leg-dot green"></span>&gt;80%</span>
+          <span class="leg"><span class="leg-dot yellow"></span>&gt;60%</span>
+          <span class="leg"><span class="leg-dot orange"></span>&gt;40%</span>
+          <span class="leg"><span class="leg-dot red"></span>Débil</span>
         </div>
       </div>
 
-      <div class="wifi-zones-grid" id="wifi-zones-list"></div>
+      <p class="section-label">Todas las zonas</p>
+      <div class="wifi-grid" id="wifi-grid"></div>
     </section>
 
   </main>
 
-  <!-- ══════════════ MODAL: NEW BATHROOM REPORT ══════════════ -->
-  <div class="modal-overlay" id="reportModal">
-    <div class="modal">
-      <div class="modal-header">
-        <h2>Reportar Baño</h2>
-        <button class="modal-close" id="closeReportModal">✕</button>
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav" role="navigation">
+    <button class="nav-tab active" data-view="library">
+      <div class="nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M4 19V6.5C4 5.12 5.12 4 6.5 4H20V19H6.5C5.12 19 4 18.38 4 17V6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M4 17C4 15.62 5.12 15 6.5 15H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
       </div>
-      <div class="modal-body">
-        <label class="field-label">Ubicación</label>
-        <select class="field-input" id="report-location">
-          <option value="">Selecciona una ubicación…</option>
-          <option>Edificio A – Planta Baja</option>
-          <option>Edificio A – Primer Piso</option>
-          <option>Edificio B – Planta Baja</option>
-          <option>Biblioteca – Primer Piso</option>
-          <option>Cafetería – Hombres</option>
-          <option>Cafetería – Mujeres</option>
-          <option>Gimnasio</option>
-          <option>Auditorio</option>
-        </select>
-        <label class="field-label mt-1">Descripción del problema</label>
-        <textarea class="field-input" id="report-description" rows="3" placeholder="Describe el problema…"></textarea>
+      <span>Biblioteca</span>
+    </button>
+
+    <button class="nav-tab" data-view="bathrooms">
+      <div class="nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <circle cx="12" cy="7.5" r="3" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M3 20h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <span class="nav-badge" id="bath-nav-badge"></span>
       </div>
-      <div class="modal-footer">
-        <button class="btn-ghost" id="cancelReport">Cancelar</button>
-        <button class="btn-primary" id="submitReport">Enviar Reporte</button>
+      <span>Baños</span>
+    </button>
+
+    <button class="nav-tab" data-view="outlets">
+      <div class="nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <rect x="7" y="3" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+          <path d="M10 7v3M14 7v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M12 15v6M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span>Enchufes</span>
+    </button>
+
+    <button class="nav-tab" data-view="wifi">
+      <div class="nav-icon-wrap">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M2 8.5C5.5 5 9.5 3 12 3s6.5 2 10 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M5 11.5C7.5 9 9.6 8 12 8s4.5 1 7 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <path d="M8 14.5C9.5 13 10.6 12.5 12 12.5s2.5.5 4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          <circle cx="12" cy="18.5" r="1.5" fill="currentColor"/>
+        </svg>
+      </div>
+      <span>WiFi</span>
+    </button>
+  </nav>
+
+  <!-- MODAL -->
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal" role="dialog" aria-modal="true">
+      <div class="modal-pill"></div>
+      <h2 class="modal-title">Reportar baño</h2>
+      <label class="field-label">Ubicación</label>
+      <select class="field-input" id="r-location">
+        <option value="">Selecciona una ubicación…</option>
+        <option>Edificio A – Planta Baja</option>
+        <option>Edificio A – Primer Piso</option>
+        <option>Edificio B – Planta Baja</option>
+        <option>Biblioteca – Primer Piso</option>
+        <option>Cafetería – Hombres</option>
+        <option>Cafetería – Mujeres</option>
+        <option>Gimnasio</option>
+        <option>Auditorio</option>
+      </select>
+      <label class="field-label" style="margin-top:16px">Descripción del problema</label>
+      <textarea class="field-input" id="r-desc" rows="3" placeholder="Describe brevemente el problema…"></textarea>
+      <div class="modal-actions">
+        <button class="btn-ghost" id="cancelModal">Cancelar</button>
+        <button class="btn-primary" id="submitReport">Enviar</button>
       </div>
     </div>
   </div>
 
   <!-- TOAST -->
-  <div class="toast" id="toast"></div>
+  <div class="toast-wrap" id="toast-wrap"></div>
 
   <script src="app.js"></script>
 </body>
