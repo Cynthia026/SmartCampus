@@ -1,235 +1,207 @@
-/* ─────────────────────────────────────────────
-   SMARTCAMPUS — APP.JS
-   Complete frontend logic
-───────────────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   SMARTCAMPUS v2 — APP.JS
+   Full frontend logic, all functionality
+══════════════════════════════════════════════ */
 
 const API = "http://localhost:3001/api";
+
+/* ─────────────────────
+   VOTER ID (persisted)
+───────────────────────*/
 const VOTER_ID = (() => {
-  let id = localStorage.getItem("sc_voter_id");
-  if (!id) { id = crypto.randomUUID(); localStorage.setItem("sc_voter_id", id); }
+  let id = localStorage.getItem("sc_v2_voter");
+  if (!id) { id = crypto.randomUUID(); localStorage.setItem("sc_v2_voter", id); }
   return id;
 })();
 
-// ─────────────────────────────────────────────
-// STATE
-// ─────────────────────────────────────────────
+/* ─────────────────────
+   STATE
+───────────────────────*/
 const state = {
-  currentSection: "library",
+  current: "library",
   library: null,
   bathrooms: [],
   outlets: null,
   wifi: null,
-  apiOnline: false,
-  historyChart: null,
 };
 
-// ─────────────────────────────────────────────
-// NAVIGATION
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   NAVIGATION
+══════════════════════════════════════════════ */
 
-function navigate(section) {
-  state.currentSection = section;
+function navigate(view) {
+  state.current = view;
 
-  document.querySelectorAll(".nav-item").forEach((btn) => {
-    btn.classList.toggle("active", btn.dataset.section === section);
+  // Update tabs
+  document.querySelectorAll(".nav-tab").forEach(t => {
+    t.classList.toggle("active", t.dataset.view === view);
   });
 
-  document.querySelectorAll(".section").forEach((s) => {
-    s.classList.toggle("active", s.id === `section-${section}`);
+  // Update sections
+  document.querySelectorAll(".view").forEach(s => {
+    s.classList.toggle("active", s.id === `view-${view}`);
   });
 
-  closeSidebar();
-  fetchSection(section);
+  fetchCurrent();
 }
 
-document.querySelectorAll(".nav-item").forEach((btn) => {
-  btn.addEventListener("click", () => navigate(btn.dataset.section));
+document.querySelectorAll(".nav-tab").forEach(tab => {
+  tab.addEventListener("click", () => navigate(tab.dataset.view));
 });
 
-// ─────────────────────────────────────────────
-// MOBILE SIDEBAR
-// ─────────────────────────────────────────────
-
-const overlay = document.createElement("div");
-overlay.className = "sidebar-overlay";
-document.body.appendChild(overlay);
-
-function openSidebar() {
-  document.getElementById("sidebar").classList.add("open");
-  overlay.classList.add("open");
-}
-
-function closeSidebar() {
-  document.getElementById("sidebar").classList.remove("open");
-  overlay.classList.remove("open");
-}
-
-document.getElementById("menuBtn")?.addEventListener("click", openSidebar);
-overlay.addEventListener("click", closeSidebar);
-
-// ─────────────────────────────────────────────
-// API HEALTH
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   API HEALTH
+══════════════════════════════════════════════ */
 
 async function checkHealth() {
+  const dot  = document.getElementById("api-dot");
+  const lbl  = document.getElementById("api-label");
   try {
     const r = await fetch(`${API}/health`, { signal: AbortSignal.timeout(3000) });
-    const ok = r.ok;
-    state.apiOnline = ok;
-    setApiStatus(ok);
+    if (r.ok) {
+      dot.className = "api-dot online";
+      lbl.textContent = "En línea";
+    } else throw new Error();
   } catch {
-    state.apiOnline = false;
-    setApiStatus(false);
+    dot.className = "api-dot offline";
+    lbl.textContent = "Sin conexión";
   }
 }
 
-function setApiStatus(online) {
-  const dots = [document.getElementById("api-status-dot"), document.getElementById("api-status-dot-mobile")];
-  const text = document.getElementById("api-status-text");
-  dots.forEach((d) => {
-    if (!d) return;
-    d.className = `status-dot${d.classList.contains("small") ? " small" : ""} ${online ? "online" : "offline"}`;
-  });
-  if (text) text.textContent = online ? "API conectada" : "Sin conexión";
+/* ══════════════════════════════════════════════
+   FETCH ROUTER
+══════════════════════════════════════════════ */
+
+function fetchCurrent() {
+  const map = { library: fetchLibrary, bathrooms: fetchBathrooms, outlets: fetchOutlets, wifi: fetchWifi };
+  map[state.current]?.();
 }
 
-// ─────────────────────────────────────────────
-// FETCH ROUTER
-// ─────────────────────────────────────────────
-
-async function fetchSection(section) {
-  switch (section) {
-    case "library": return fetchLibrary();
-    case "bathrooms": return fetchBathrooms();
-    case "outlets": return fetchOutlets();
-    case "wifi": return fetchWifi();
-  }
-}
-
-// ─────────────────────────────────────────────
-// LIBRARY
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   LIBRARY
+══════════════════════════════════════════════ */
 
 async function fetchLibrary() {
   try {
     const r = await fetch(`${API}/library`);
     state.library = await r.json();
     renderLibrary(state.library);
-  } catch {
-    renderLibraryOffline();
-  }
+  } catch { /* silent */ }
 }
 
 function renderLibrary(d) {
+  const { currentOccupancy: occ, capacity: cap, percentage: pct, level, floors, history, lastUpdated } = d;
+
+  // Numbers
+  set("occ-number", occ);
+  set("occ-capacity", cap);
+  set("lib-free", cap - occ);
+  set("lib-cap", cap);
+  set("lib-time", new Date(lastUpdated).toLocaleTimeString("es-MX", { hour: "2-digit", minute: "2-digit" }));
+
   // Semaphore
-  document.getElementById("sem-green").className = "sem-light" + (d.level === "low" ? " active-green" : "");
-  document.getElementById("sem-yellow").className = "sem-light" + (d.level === "medium" ? " active-yellow" : "");
-  document.getElementById("sem-red").className = "sem-light" + (d.level === "high" ? " active-red" : "");
+  document.getElementById("sem-red").className    = "sem-bulb" + (level === "high" ? " on-red" : "");
+  document.getElementById("sem-yellow").className = "sem-bulb" + (level === "medium" ? " on-yellow" : "");
+  document.getElementById("sem-green").className  = "sem-bulb" + (level === "low" ? " on-green" : "");
 
-  document.getElementById("occ-number").textContent = d.currentOccupancy;
-  document.getElementById("lib-capacity").textContent = d.capacity;
-  document.getElementById("lib-available").textContent = d.capacity - d.currentOccupancy;
-  document.getElementById("occ-capacity-label").textContent = `/ ${d.capacity}`;
-
-  const badge = document.getElementById("occ-status-badge");
+  // Badge
+  const badge = document.getElementById("occ-badge");
   const labels = { low: "🟢 Baja ocupación", medium: "🟡 Media ocupación", high: "🔴 Alta ocupación" };
-  badge.textContent = labels[d.level];
-  badge.className = `occ-status-badge ${d.level}`;
+  badge.textContent = labels[level] || "";
+  badge.className = `sem-badge ${level}`;
 
-  const barColors = { low: "#00e5a0", medium: "#f5c518", high: "#ff2d55" };
-  const bar = document.getElementById("occ-bar");
-  bar.style.width = d.percentage + "%";
-  bar.style.background = barColors[d.level];
-
-  document.getElementById("library-updated").textContent =
-    "Actualizado: " + new Date(d.lastUpdated).toLocaleTimeString("es-MX");
+  // Donut
+  const CIRC = 188.5;
+  const fill = document.getElementById("donut-fill");
+  const colors = { low: "var(--green)", medium: "var(--yellow-mid)", high: "var(--red-mid)" };
+  fill.style.strokeDashoffset = CIRC - (pct / 100) * CIRC;
+  fill.style.stroke = colors[level] || "var(--green)";
+  set("donut-pct", pct + "%");
 
   // Floors
+  const barColors = { low: "var(--green)", medium: "var(--yellow-mid)", high: "var(--red-mid)" };
   const floorsEl = document.getElementById("floors-list");
-  floorsEl.innerHTML = d.floors.map((f) => `
+  floorsEl.innerHTML = floors.map(f => `
     <div class="floor-row">
-      <div class="floor-name">${f.name}</div>
-      <div class="floor-bar-track">
-        <div class="floor-bar-fill" style="width:${f.percentage}%; background:${barColors[f.level]}"></div>
+      <div class="floor-header">
+        <span class="floor-name">${esc(f.name)}</span>
+        <span class="floor-nums">${f.occupancy}/${f.capacity}</span>
       </div>
-      <div class="floor-pct">${f.occupancy}/${f.capacity}</div>
+      <div class="floor-track">
+        <div class="floor-fill" style="width:${f.percentage}%; background:${barColors[f.level]}"></div>
+      </div>
     </div>
   `).join("");
 
-  // History chart
-  if (d.history) renderHistoryChart(d.history);
+  // Chart
+  if (history) drawChart(history);
 }
 
-function renderLibraryOffline() {
-  document.getElementById("occ-number").textContent = "—";
-  document.getElementById("occ-status-badge").textContent = "Sin datos";
-}
-
-function renderHistoryChart(history) {
+function drawChart(history) {
   const canvas = document.getElementById("history-chart");
   if (!canvas) return;
-  const ctx = canvas.getContext("2d");
-
-  const W = canvas.offsetWidth || 600;
-  const H = 120;
+  const W = canvas.parentElement.offsetWidth - 40 || 500;
+  const H = 90;
   canvas.width = W;
   canvas.height = H;
-
+  const ctx = canvas.getContext("2d");
   ctx.clearRect(0, 0, W, H);
 
+  const pad = { l: 4, r: 4, t: 6, b: 20 };
+  const cW = W - pad.l - pad.r;
+  const cH = H - pad.t - pad.b;
   const max = 100;
-  const pad = { l: 8, r: 8, t: 10, b: 24 };
-  const chartW = W - pad.l - pad.r;
-  const chartH = H - pad.t - pad.b;
 
-  const points = history.map((h, i) => ({
-    x: pad.l + (i / (history.length - 1)) * chartW,
-    y: pad.t + chartH - (h.occupancy / max) * chartH,
-    label: h.hour,
-    val: h.occupancy,
+  const pts = history.map((h, i) => ({
+    x: pad.l + (i / (history.length - 1)) * cW,
+    y: pad.t + cH - (h.occupancy / max) * cH,
+    lbl: h.hour,
   }));
 
-  // Fill
-  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + chartH);
-  grad.addColorStop(0, "rgba(0,229,160,0.25)");
-  grad.addColorStop(1, "rgba(0,229,160,0)");
+  // Gradient fill
+  const grad = ctx.createLinearGradient(0, pad.t, 0, pad.t + cH);
+  grad.addColorStop(0, "rgba(22,163,74,0.18)");
+  grad.addColorStop(1, "rgba(22,163,74,0)");
   ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  points.forEach((p, i) => { if (i > 0) ctx.lineTo(p.x, p.y); });
-  ctx.lineTo(points[points.length - 1].x, pad.t + chartH);
-  ctx.lineTo(points[0].x, pad.t + chartH);
+  ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, pad.t + cH);
+  ctx.lineTo(pts[0].x, pad.t + cH);
   ctx.closePath();
   ctx.fillStyle = grad;
   ctx.fill();
 
   // Line
   ctx.beginPath();
-  ctx.moveTo(points[0].x, points[0].y);
-  points.forEach((p, i) => { if (i > 0) ctx.lineTo(p.x, p.y); });
-  ctx.strokeStyle = "#00e5a0";
+  ctx.moveTo(pts[0].x, pts[0].y);
+  pts.slice(1).forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = "var(--green)";
   ctx.lineWidth = 2;
+  ctx.lineJoin = "round";
   ctx.stroke();
 
-  // Labels (every 3 hours)
-  ctx.fillStyle = "rgba(74,85,104,0.9)";
-  ctx.font = "9px 'Space Mono'";
+  // Labels
+  ctx.fillStyle = "#9a9893";
+  ctx.font = `500 9px 'DM Mono', monospace`;
   ctx.textAlign = "center";
-  points.forEach((p, i) => {
-    if (i % 3 === 0) ctx.fillText(p.label, p.x, H - 6);
-  });
+  pts.forEach((p, i) => { if (i % 3 === 0) ctx.fillText(p.lbl, p.x, H - 4); });
 
   // Dots
-  points.forEach((p) => {
+  pts.forEach(p => {
     ctx.beginPath();
     ctx.arc(p.x, p.y, 3, 0, Math.PI * 2);
-    ctx.fillStyle = "#00e5a0";
+    ctx.fillStyle = "var(--green)";
+    ctx.fill();
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 1.5, 0, Math.PI * 2);
+    ctx.fillStyle = "white";
     ctx.fill();
   });
 }
 
-// ─────────────────────────────────────────────
-// BATHROOMS
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   BATHROOMS
+══════════════════════════════════════════════ */
 
 async function fetchBathrooms() {
   try {
@@ -238,61 +210,59 @@ async function fetchBathrooms() {
     renderBathrooms(state.bathrooms);
   } catch {
     document.getElementById("reports-list").innerHTML =
-      '<div class="loading-state">Error al cargar. Verifica la conexión.</div>';
+      `<div class="loading-card">Error al cargar los reportes.<br>Verifica que el servidor esté corriendo.</div>`;
   }
 }
 
 function renderBathrooms(reports) {
-  const pending = reports.filter((r) => r.status !== "resolved");
-  const inProg = reports.filter((r) => r.status === "in_progress");
-  const votes = reports.reduce((s, r) => s + r.votes, 0);
+  const pending  = reports.filter(r => r.status !== "resolved");
+  const inProg   = reports.filter(r => r.status === "in_progress");
+  const allVotes = reports.reduce((s, r) => s + r.votes, 0);
 
-  document.getElementById("bath-total").textContent = pending.length;
-  document.getElementById("bath-inprogress").textContent = inProg.length;
-  document.getElementById("bath-votes").textContent = votes;
+  set("bath-total", pending.length);
+  set("bath-progress", inProg.length);
+  set("bath-votes", allVotes);
 
-  const badge = document.getElementById("bath-badge");
-  if (pending.length > 0) {
-    badge.textContent = pending.length;
-    badge.classList.add("visible");
-  } else {
-    badge.classList.remove("visible");
-  }
+  // Badge in nav
+  const badge = document.getElementById("bath-nav-badge");
+  badge.textContent = pending.length;
+  badge.classList.toggle("show", pending.length > 0);
 
   const list = document.getElementById("reports-list");
-
-  if (reports.length === 0) {
-    list.innerHTML = '<div class="loading-state">✅ No hay reportes activos. ¡El campus está limpio!</div>';
+  if (!reports.length) {
+    list.innerHTML = `<div class="empty-state">
+      <div class="empty-state-icon">✅</div>
+      <div>Sin reportes activos — ¡todo limpio!</div>
+    </div>`;
     return;
   }
 
-  const priority = (r) => (r.votes > 10 ? "high" : r.votes > 4 ? "medium" : "low");
+  const priority = r => r.votes > 10 ? "p-high" : r.votes > 4 ? "p-medium" : "p-low";
+  const voted    = r => r.voters?.includes(VOTER_ID);
 
-  list.innerHTML = reports.map((r) => {
-    const voted = r.voters?.includes(VOTER_ID);
-    const ago = timeAgo(r.reportedAt);
-    return `
-      <div class="report-card priority-${priority(r)}" data-id="${r.id}">
-        <div>
-          <div class="report-location">📍 ${esc(r.location)}</div>
-          <div class="report-description">${esc(r.description)}</div>
-          <div class="report-meta">
-            <span class="report-time">Hace ${ago}</span>
-            <span class="status-pill ${r.status}">${statusLabel(r.status)}</span>
-          </div>
-          <div class="report-actions">
-            ${r.status !== "in_progress" ? `<button class="btn-xs" onclick="markStatus('${r.id}','in_progress')">En proceso</button>` : ""}
-            ${r.status !== "resolved" ? `<button class="btn-xs" onclick="markStatus('${r.id}','resolved')">Resuelto</button>` : ""}
-            <button class="btn-xs danger" onclick="deleteReport('${r.id}')">Eliminar</button>
-          </div>
+  list.innerHTML = reports.map(r => `
+    <div class="report-card ${priority(r)}" data-id="${r.id}">
+      <div>
+        <div class="report-location">📍 ${esc(r.location)}</div>
+        <div class="report-desc">${esc(r.description)}</div>
+        <div class="report-meta">
+          <span class="report-time">${timeAgo(r.reportedAt)}</span>
+          <span class="status-tag ${r.status}">${statusLabel(r.status)}</span>
         </div>
-        <div class="vote-col">
-          <button class="vote-btn ${voted ? "voted" : ""}" onclick="vote('${r.id}')">▲</button>
-          <span class="vote-count">${r.votes}</span>
+        <div class="report-actions">
+          ${r.status !== "in_progress" && r.status !== "resolved"
+            ? `<button class="action-btn" onclick="markStatus('${r.id}','in_progress')">En proceso</button>` : ""}
+          ${r.status !== "resolved"
+            ? `<button class="action-btn" onclick="markStatus('${r.id}','resolved')">Resuelto ✓</button>` : ""}
+          <button class="action-btn danger" onclick="deleteReport('${r.id}')">Eliminar</button>
         </div>
       </div>
-    `;
-  }).join("");
+      <div class="vote-col">
+        <button class="vote-btn ${voted(r) ? "voted" : ""}" onclick="vote('${r.id}')">▲</button>
+        <span class="vote-count">${r.votes}</span>
+      </div>
+    </div>
+  `).join("");
 }
 
 async function vote(id) {
@@ -302,10 +272,10 @@ async function vote(id) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ voterId: VOTER_ID }),
     });
-    if (r.status === 409) { showToast("Ya votaste en este reporte", "error"); return; }
+    if (r.status === 409) { toast("Ya votaste en este reporte", "error"); return; }
     if (!r.ok) throw new Error();
     fetchBathrooms();
-  } catch { showToast("Error al votar", "error"); }
+  } catch { toast("Error al votar", "error"); }
 }
 
 async function markStatus(id, status) {
@@ -316,8 +286,8 @@ async function markStatus(id, status) {
       body: JSON.stringify({ status }),
     });
     fetchBathrooms();
-    showToast("Estado actualizado ✓", "success");
-  } catch { showToast("Error al actualizar", "error"); }
+    toast(status === "resolved" ? "¡Marcado como resuelto!" : "Estado actualizado", "success");
+  } catch { toast("Error al actualizar", "error"); }
 }
 
 async function deleteReport(id) {
@@ -325,31 +295,29 @@ async function deleteReport(id) {
   try {
     await fetch(`${API}/bathrooms/${id}`, { method: "DELETE" });
     fetchBathrooms();
-    showToast("Reporte eliminado", "success");
-  } catch { showToast("Error al eliminar", "error"); }
+    toast("Reporte eliminado", "success");
+  } catch { toast("Error al eliminar", "error"); }
 }
 
-// MODAL
-document.getElementById("openReportModal").addEventListener("click", () => {
-  document.getElementById("reportModal").classList.add("open");
+/* ── MODAL ── */
+const backdrop = document.getElementById("modal-backdrop");
+
+document.getElementById("openModal").addEventListener("click", () => {
+  backdrop.classList.add("open");
 });
-document.getElementById("closeReportModal").addEventListener("click", closeModal);
-document.getElementById("cancelReport").addEventListener("click", closeModal);
-document.getElementById("reportModal").addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) closeModal();
-});
+document.getElementById("cancelModal").addEventListener("click", closeModal);
+backdrop.addEventListener("click", e => { if (e.target === backdrop) closeModal(); });
 
 function closeModal() {
-  document.getElementById("reportModal").classList.remove("open");
-  document.getElementById("report-location").value = "";
-  document.getElementById("report-description").value = "";
+  backdrop.classList.remove("open");
+  document.getElementById("r-location").value = "";
+  document.getElementById("r-desc").value = "";
 }
 
 document.getElementById("submitReport").addEventListener("click", async () => {
-  const location = document.getElementById("report-location").value.trim();
-  const description = document.getElementById("report-description").value.trim();
-  if (!location || !description) { showToast("Completa todos los campos", "error"); return; }
-
+  const location    = document.getElementById("r-location").value.trim();
+  const description = document.getElementById("r-desc").value.trim();
+  if (!location || !description) { toast("Completa todos los campos", "error"); return; }
   try {
     const r = await fetch(`${API}/bathrooms`, {
       method: "POST",
@@ -359,13 +327,13 @@ document.getElementById("submitReport").addEventListener("click", async () => {
     if (!r.ok) throw new Error();
     closeModal();
     fetchBathrooms();
-    showToast("¡Reporte enviado! ✓", "success");
-  } catch { showToast("Error al enviar reporte", "error"); }
+    toast("Reporte enviado correctamente ✓", "success");
+  } catch { toast("Error al enviar reporte", "error"); }
 });
 
-// ─────────────────────────────────────────────
-// OUTLETS
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   OUTLETS
+══════════════════════════════════════════════ */
 
 async function fetchOutlets() {
   try {
@@ -373,44 +341,46 @@ async function fetchOutlets() {
     state.outlets = await r.json();
     renderOutlets(state.outlets);
   } catch {
-    document.getElementById("outlets-list").innerHTML =
-      '<div class="loading-state">Error al cargar enchufes</div>';
+    document.getElementById("outlets-grid").innerHTML =
+      `<div class="loading-card">Error al cargar enchufes</div>`;
   }
 }
 
-function renderOutlets(data) {
-  const { outlets, summary } = data;
-  document.getElementById("out-available").textContent = summary.available;
-  document.getElementById("out-occupied").textContent = summary.occupied;
-  document.getElementById("out-total").textContent = summary.total;
+function renderOutlets({ outlets, summary }) {
+  set("out-avail", summary.available);
+  set("out-occ", summary.occupied);
+  set("out-total", summary.total);
 
-  // Map
   renderOutletsMap(outlets);
 
-  // List
-  const typeLabel = { double: "Doble", triple: "Triple", usb: "USB", weatherproof: "Exterior" };
-  document.getElementById("outlets-list").innerHTML = outlets.map((o) => `
-    <div class="outlet-item" onclick="toggleOutlet(${o.id})" title="Clic para cambiar estado">
-      <div class="outlet-dot ${o.available ? "available" : "occupied"}"></div>
-      <div>
-        <div class="outlet-name">${o.zone}</div>
-        <div class="outlet-type">${typeLabel[o.type] || o.type} · #${o.id}</div>
+  const typeMap = { double: "Doble", triple: "Triple", usb: "USB", weatherproof: "Exterior" };
+  document.getElementById("outlets-grid").innerHTML = outlets.map(o => `
+    <div class="outlet-card ${o.available ? "available" : "occupied"}" onclick="toggleOutlet(${o.id})">
+      <div class="outlet-dot-row">
+        <div class="outlet-indicator ${o.available ? "available" : "occupied"}"></div>
+        <span style="font-size:.68rem;font-weight:600;color:${o.available ? "var(--green)" : "var(--red)"}">
+          ${o.available ? "Libre" : "Ocupado"}
+        </span>
       </div>
+      <div class="outlet-zone">${esc(o.zone)}</div>
+      <div class="outlet-type-lbl">${typeMap[o.type] || o.type} · #${o.id}</div>
     </div>
   `).join("");
 }
 
 function renderOutletsMap(outlets) {
-  const container = document.getElementById("outlets-map");
-  container.innerHTML = `
-    <svg viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg">
-      ${campusSVGBase()}
-      ${outlets.map((o) => `
-        <g class="map-pin" onclick="toggleOutlet(${o.id})" transform="translate(${o.x},${o.y})">
-          <circle r="2.4" fill="${o.available ? "#00e5a0" : "#ff2d55"}"
-            opacity="0.9"/>
-          <circle r="1.2" fill="white" opacity="0.8"/>
-          ${o.available ? `<circle r="2.4" fill="#00e5a0" opacity="0.3"><animate attributeName="r" values="2.4;4;2.4" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0;0.3" dur="2s" repeatCount="indefinite"/></circle>` : ""}
+  document.getElementById("outlets-map").innerHTML = `
+    <svg viewBox="0 0 100 52" xmlns="http://www.w3.org/2000/svg">
+      ${campusBase()}
+      ${outlets.map(o => `
+        <g style="cursor:pointer" onclick="toggleOutlet(${o.id})" transform="translate(${o.x},${o.y})">
+          ${o.available
+            ? `<circle r="3.5" fill="var(--green)" opacity="0.2">
+                 <animate attributeName="r" values="3.5;5.5;3.5" dur="2s" repeatCount="indefinite"/>
+                 <animate attributeName="opacity" values="0.2;0;0.2" dur="2s" repeatCount="indefinite"/>
+               </circle>` : ""}
+          <circle r="3" fill="${o.available ? "#16a34a" : "#dc2626"}" opacity="0.9"/>
+          <circle r="1.3" fill="white" opacity="0.9"/>
         </g>
       `).join("")}
     </svg>
@@ -421,13 +391,13 @@ async function toggleOutlet(id) {
   try {
     await fetch(`${API}/outlets/${id}`, { method: "PATCH" });
     fetchOutlets();
-    showToast("Estado del enchufe actualizado ✓", "success");
-  } catch { showToast("Error al actualizar", "error"); }
+    toast("Estado actualizado ✓", "success");
+  } catch { toast("Error al actualizar", "error"); }
 }
 
-// ─────────────────────────────────────────────
-// WIFI
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   WIFI
+══════════════════════════════════════════════ */
 
 async function fetchWifi() {
   try {
@@ -435,68 +405,63 @@ async function fetchWifi() {
     state.wifi = await r.json();
     renderWifi(state.wifi);
   } catch {
-    document.getElementById("wifi-zones-list").innerHTML =
-      '<div class="loading-state">Error al cargar zonas WiFi</div>';
+    document.getElementById("wifi-grid").innerHTML =
+      `<div class="loading-card">Error al cargar zonas WiFi</div>`;
   }
 }
 
-function renderWifi(data) {
-  const { zones } = data;
+function renderWifi({ zones }) {
+  set("wifi-exc",  zones.filter(z => z.quality === "excellent").length);
+  set("wifi-good", zones.filter(z => z.quality === "good").length);
+  set("wifi-poor", zones.filter(z => z.quality === "poor").length);
 
-  document.getElementById("wifi-excellent").textContent = zones.filter((z) => z.quality === "excellent").length;
-  document.getElementById("wifi-good").textContent = zones.filter((z) => z.quality === "good").length;
-  document.getElementById("wifi-poor").textContent = zones.filter((z) => z.quality === "poor").length;
-
-  // Map
   renderWifiMap(zones);
 
-  // Cards
-  const qualityColors = {
-    excellent: "#00e5a0",
-    good: "#f5c518",
-    fair: "#ff6b35",
-    poor: "#ff2d55",
+  const colorMap = {
+    excellent: { fill: "var(--green)", cls: "excellent" },
+    good:      { fill: "var(--yellow-mid)", cls: "good" },
+    fair:      { fill: "var(--orange)", cls: "fair" },
+    poor:      { fill: "var(--red-mid)", cls: "poor" },
   };
-  const qualityLabels = { excellent: "Excelente", good: "Buena", fair: "Regular", poor: "Débil" };
+  const qualLabel = { excellent: "Excelente", good: "Buena", fair: "Regular", poor: "Débil" };
 
-  document.getElementById("wifi-zones-list").innerHTML = zones.map((z) => {
-    const color = qualityColors[z.quality];
+  document.getElementById("wifi-grid").innerHTML = zones.map(z => {
+    const { fill, cls } = colorMap[z.quality] || colorMap.poor;
     return `
-      <div class="wifi-zone-card">
-        <div class="wifi-zone-name">📡 ${z.name}</div>
-        <div class="wifi-signal-pct" style="color:${color}">${z.signal}%</div>
-        <div class="wifi-signal-bar">
-          <div class="wifi-signal-fill" style="width:${z.signal}%; background:${color}"></div>
+      <div class="wifi-card">
+        <div class="wifi-name">${esc(z.name)}</div>
+        <div class="wifi-pct" style="color:${fill}">${z.signal}%</div>
+        <div class="wifi-bar-track">
+          <div class="wifi-bar-fill" style="width:${z.signal}%; background:${fill}"></div>
         </div>
-        <div class="wifi-ssid">${z.ssid} · ${z.band}</div>
-        <div class="wifi-quality-badge" style="color:${color}; border-color:${color}; background:${color}18">
-          ${qualityLabels[z.quality]}
-        </div>
+        <div class="wifi-ssid">${esc(z.ssid)} · ${esc(z.band)}</div>
+        <div class="wifi-quality ${cls}">${qualLabel[z.quality]}</div>
       </div>
     `;
   }).join("");
 }
 
 function renderWifiMap(zones) {
-  const container = document.getElementById("wifi-map");
-  const qualityColors = {
-    excellent: "#00e5a0",
-    good: "#f5c518",
-    fair: "#ff6b35",
-    poor: "#ff2d55",
+  const colorMap = {
+    excellent: "#16a34a",
+    good:      "#ca8a04",
+    fair:      "#ea580c",
+    poor:      "#dc2626",
   };
 
-  container.innerHTML = `
-    <svg viewBox="0 0 100 55" xmlns="http://www.w3.org/2000/svg">
-      ${campusSVGBase()}
-      ${zones.map((z) => {
-        const color = qualityColors[z.quality];
+  document.getElementById("wifi-map").innerHTML = `
+    <svg viewBox="0 0 100 52" xmlns="http://www.w3.org/2000/svg">
+      ${campusBase()}
+      ${zones.map(z => {
+        const color = colorMap[z.quality] || "#dc2626";
+        const r = 4 + (z.signal / 100) * 5;
         return `
-          <g class="map-pin" transform="translate(${z.x},${z.y})">
-            <circle r="${5 + (z.signal / 100) * 4}" fill="${color}" opacity="0.12"/>
-            <circle r="2.5" fill="${color}" opacity="0.85"/>
-            <circle r="1.2" fill="white" opacity="0.9"/>
-            <text x="0" y="-4" text-anchor="middle" font-size="1.8" fill="${color}" font-family="Space Mono">${z.signal}%</text>
+          <g transform="translate(${z.x},${z.y})">
+            <circle r="${r}" fill="${color}" opacity="0.14"/>
+            <circle r="2.8" fill="${color}" opacity="0.85"/>
+            <circle r="1.2" fill="white" opacity="0.95"/>
+            <text x="0" y="-4.5" text-anchor="middle" font-size="2" fill="${color}"
+              font-family="DM Mono,monospace" font-weight="500">${z.signal}%</text>
           </g>
         `;
       }).join("")}
@@ -504,59 +469,51 @@ function renderWifiMap(zones) {
   `;
 }
 
-// ─────────────────────────────────────────────
-// CAMPUS SVG BASE MAP
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   CAMPUS SVG BASE
+══════════════════════════════════════════════ */
 
-function campusSVGBase() {
+function campusBase() {
   return `
-    <!-- Background -->
-    <rect width="100" height="55" fill="#080b0f"/>
-
-    <!-- Paths / grass -->
-    <rect x="5" y="5" width="90" height="45" rx="1" fill="#0c1018" stroke="#1e2530" stroke-width="0.3"/>
-
-    <!-- Buildings -->
-    <rect x="8" y="8" width="28" height="18" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="22" y="17.5" text-anchor="middle" font-size="2.2" fill="#4a5568" font-family="Syne">Biblioteca</text>
-    <text x="22" y="21" text-anchor="middle" font-size="1.6" fill="#2d3748" font-family="Space Mono">Edificio B</text>
-
-    <rect x="42" y="8" width="24" height="14" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="54" y="15.5" text-anchor="middle" font-size="2" fill="#4a5568" font-family="Syne">Sala Cómputo</text>
-
-    <rect x="72" y="8" width="20" height="26" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="82" y="21.5" text-anchor="middle" font-size="2" fill="#4a5568" font-family="Syne">Edificio</text>
-    <text x="82" y="25" text-anchor="middle" font-size="2" fill="#4a5568" font-family="Syne">A</text>
-
-    <rect x="8" y="38" width="30" height="12" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="23" y="44.5" text-anchor="middle" font-size="2.2" fill="#4a5568" font-family="Syne">Jardín Norte</text>
-
-    <rect x="44" y="38" width="22" height="12" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="55" y="44.5" text-anchor="middle" font-size="2" fill="#4a5568" font-family="Syne">Cafetería</text>
-
-    <rect x="72" y="40" width="20" height="10" rx="0.5" fill="#111820" stroke="#1e2530" stroke-width="0.4"/>
-    <text x="82" y="45.5" text-anchor="middle" font-size="2" fill="#4a5568" font-family="Syne">Estac.</text>
+    <rect width="100" height="52" fill="#faf9f5"/>
 
     <!-- Paths -->
-    <line x1="38" y1="5" x2="38" y2="50" stroke="#0f1520" stroke-width="1.5"/>
-    <line x1="5" y1="30" x2="95" y2="30" stroke="#0f1520" stroke-width="1.5"/>
-    <line x1="68" y1="5" x2="68" y2="50" stroke="#0f1520" stroke-width="1"/>
+    <rect x="0" y="28" width="100" height="1.5" fill="#e8e5e0"/>
+    <rect x="40" y="0" width="1.5" height="52" fill="#e8e5e0"/>
+    <rect x="70" y="0" width="1.5" height="52" fill="#e8e5e0"/>
+
+    <!-- Buildings -->
+    <rect x="4" y="4" width="33" height="21" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="20.5" y="13" text-anchor="middle" font-size="2.4" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Biblioteca</text>
+    <text x="20.5" y="17" text-anchor="middle" font-size="1.8" fill="#b8b5b0" font-family="DM Mono,monospace">Edificio B</text>
+
+    <rect x="43" y="4" width="24" height="21" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="55" y="13" text-anchor="middle" font-size="2.2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Cómputo</text>
+    <text x="55" y="17.5" text-anchor="middle" font-size="1.7" fill="#b8b5b0" font-family="DM Mono,monospace">Lab</text>
+
+    <rect x="73" y="4" width="22" height="21" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="84" y="13" text-anchor="middle" font-size="2.2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Edificio</text>
+    <text x="84" y="17.5" text-anchor="middle" font-size="2.2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">A</text>
+
+    <rect x="4" y="32" width="33" height="16" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="20.5" y="41" text-anchor="middle" font-size="2.2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Jardín Norte</text>
+
+    <rect x="43" y="32" width="24" height="16" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="55" y="41" text-anchor="middle" font-size="2.2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Cafetería</text>
+
+    <rect x="73" y="32" width="22" height="16" rx="1" fill="#eeecea" stroke="#d9d6d0" stroke-width="0.4"/>
+    <text x="84" y="41" text-anchor="middle" font-size="2" fill="#9a9893" font-family="Fraunces,serif" font-weight="600">Estac.</text>
   `;
 }
 
-// ─────────────────────────────────────────────
-// AUTO-REFRESH
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════════ */
 
-setInterval(() => {
-  fetchSection(state.currentSection);
-}, 6000);
-
-setInterval(checkHealth, 10000);
-
-// ─────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────
+function set(id, val) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = val;
+}
 
 function esc(str) {
   return String(str)
@@ -569,24 +526,31 @@ function statusLabel(s) {
 }
 
 function timeAgo(iso) {
-  const secs = Math.floor((Date.now() - new Date(iso)) / 1000);
-  if (secs < 60) return `${secs}s`;
-  if (secs < 3600) return `${Math.floor(secs / 60)} min`;
-  return `${Math.floor(secs / 3600)} h`;
+  const s = Math.floor((Date.now() - new Date(iso)) / 1000);
+  if (s < 60)   return `hace ${s}s`;
+  if (s < 3600) return `hace ${Math.floor(s / 60)} min`;
+  return `hace ${Math.floor(s / 3600)} h`;
 }
 
-let toastTimer;
-function showToast(msg, type = "success") {
-  const t = document.getElementById("toast");
-  t.textContent = msg;
-  t.className = `toast ${type} show`;
-  clearTimeout(toastTimer);
-  toastTimer = setTimeout(() => { t.className = "toast"; }, 3000);
+function toast(msg, type = "success") {
+  const wrap = document.getElementById("toast-wrap");
+  const el   = document.createElement("div");
+  el.className = `toast ${type}`;
+  el.textContent = msg;
+  wrap.appendChild(el);
+  setTimeout(() => el.remove(), 3100);
 }
 
-// ─────────────────────────────────────────────
-// INIT
-// ─────────────────────────────────────────────
+/* ══════════════════════════════════════════════
+   AUTO REFRESH
+══════════════════════════════════════════════ */
+
+setInterval(fetchCurrent, 6000);
+setInterval(checkHealth, 12000);
+
+/* ══════════════════════════════════════════════
+   INIT
+══════════════════════════════════════════════ */
 
 async function init() {
   await checkHealth();
