@@ -18,244 +18,342 @@
     <div class="ambient-orb orb-3"></div>
   </div>
 
-  <!-- TOP HEADER -->
-  <header class="topbar">
-    <div class="topbar-inner">
-      <div class="topbar-brand">
-        <div class="brand-mark">
-          <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+  <!-- ░░ AUTH SCREEN ░░ -->
+  <div class="auth-screen" id="auth-screen">
+    <div class="auth-card">
+      <div class="auth-brand">
+        <div class="auth-logo">
+          <svg width="28" height="28" viewBox="0 0 22 22" fill="none">
             <path d="M11 2L19.5 7V15L11 20L2.5 15V7L11 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
             <path d="M11 8L14.5 10V14L11 16L7.5 14V10L11 8Z" fill="currentColor" opacity="0.7"/>
           </svg>
         </div>
-        <div>
-          <span class="brand-name">SmartCampus</span>
-          <span class="brand-sub">Universidad</span>
-        </div>
+        <h1 class="auth-app-name">SmartCampus</h1>
+        <p class="auth-tagline">Tu campus, más inteligente</p>
       </div>
-      <div class="api-pill" id="api-pill">
-        <span class="api-dot" id="api-dot"></span>
-        <span id="api-label">…</span>
+
+      <!-- Tab switcher -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Iniciar sesión</button>
+        <button class="auth-tab" data-tab="register">Registrarse</button>
+      </div>
+
+      <!-- LOGIN FORM -->
+      <div class="auth-form active" id="form-login">
+        <label class="field-label">Correo electrónico</label>
+        <input class="field-input" id="login-email" type="email" placeholder="tu@universidad.mx" autocomplete="email"/>
+        <label class="field-label" style="margin-top:14px">Contraseña</label>
+        <div class="password-wrap">
+          <input class="field-input" id="login-password" type="password" placeholder="••••••••" autocomplete="current-password"/>
+          <button class="eye-btn" id="login-eye" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" id="eye-icon-login">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn-primary full" id="btn-login" style="margin-top:20px">Entrar</button>
+        <button class="btn-ghost-link" id="btn-skip-login">Continuar sin cuenta →</button>
+      </div>
+
+      <!-- REGISTER FORM -->
+      <div class="auth-form" id="form-register">
+        <label class="field-label">Nombre de usuario</label>
+        <input class="field-input" id="reg-username" type="text" placeholder="juan_perez" autocomplete="username"/>
+        <label class="field-label" style="margin-top:14px">Correo electrónico</label>
+        <input class="field-input" id="reg-email" type="email" placeholder="tu@universidad.mx" autocomplete="email"/>
+        <label class="field-label" style="margin-top:14px">Contraseña</label>
+        <div class="password-wrap">
+          <input class="field-input" id="reg-password" type="password" placeholder="Mínimo 6 caracteres" autocomplete="new-password"/>
+          <button class="eye-btn" id="reg-eye" type="button" tabindex="-1">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" id="eye-icon-reg">
+              <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7S1 12 1 12z" stroke="currentColor" stroke-width="1.8"/>
+              <circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/>
+            </svg>
+          </button>
+        </div>
+        <button class="btn-primary full" id="btn-register" style="margin-top:20px">Crear cuenta</button>
+        <button class="btn-ghost-link" id="btn-skip-register">Continuar sin cuenta →</button>
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- MAIN CONTENT -->
-  <main class="content">
+  <!-- ░░ MAIN APP (hidden until auth) ░░ -->
+  <div class="app-shell" id="app-shell" style="display:none">
 
-    <!-- ══ LIBRARY ══ -->
-    <section class="view active" id="view-library">
-      <div class="view-hero">
-        <p class="view-eyebrow">Estado actual</p>
-        <h1 class="view-title">Biblioteca</h1>
-      </div>
-
-      <div class="card card-semaphore" id="sem-card">
-        <div class="sem-left">
-          <div class="sem-housing">
-            <div class="sem-bulb" id="sem-red"></div>
-            <div class="sem-bulb" id="sem-yellow"></div>
-            <div class="sem-bulb" id="sem-green"></div>
-          </div>
-        </div>
-        <div class="sem-center">
-          <div class="sem-big" id="occ-number">—</div>
-          <div class="sem-sub">de <strong id="occ-capacity">—</strong> lugares</div>
-          <div class="sem-badge" id="occ-badge">Cargando…</div>
-        </div>
-        <div class="sem-right">
-          <div class="donut-wrap">
-            <svg class="donut" viewBox="0 0 80 80">
-              <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
-              <circle id="donut-fill" cx="40" cy="40" r="30" fill="none" stroke="var(--green)" stroke-width="10"
-                stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
-                transform="rotate(-90 40 40)" style="transition:stroke-dashoffset 1s ease,stroke .5s ease"/>
+    <!-- TOP HEADER -->
+    <header class="topbar">
+      <div class="topbar-inner">
+        <div class="topbar-brand">
+          <div class="brand-mark">
+            <svg width="20" height="20" viewBox="0 0 22 22" fill="none">
+              <path d="M11 2L19.5 7V15L11 20L2.5 15V7L11 2Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+              <path d="M11 8L14.5 10V14L11 16L7.5 14V10L11 8Z" fill="currentColor" opacity="0.7"/>
             </svg>
-            <span class="donut-pct" id="donut-pct">0%</span>
+          </div>
+          <div>
+            <span class="brand-name">SmartCampus</span>
+            <span class="brand-sub" id="topbar-username">Universidad</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <!-- Notifications bell -->
+          <button class="notif-bell" id="notif-bell" style="display:none">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            </svg>
+            <span class="notif-count" id="notif-count" style="display:none"></span>
+          </button>
+          <div class="api-pill" id="api-pill">
+            <span class="api-dot" id="api-dot"></span>
+            <span id="api-label">…</span>
           </div>
         </div>
       </div>
+    </header>
 
-      <div class="stats-row">
-        <div class="stat-chip">
-          <div class="stat-chip-val green" id="lib-free">—</div>
-          <div class="stat-chip-lbl">Libres</div>
+    <!-- MAIN CONTENT -->
+    <main class="content">
+
+      <!-- ══ LIBRARY ══ -->
+      <section class="view active" id="view-library">
+        <div class="view-hero">
+          <p class="view-eyebrow">Estado actual</p>
+          <h1 class="view-title">Biblioteca</h1>
         </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val" id="lib-cap">—</div>
-          <div class="stat-chip-lbl">Capacidad</div>
+        <div class="card card-semaphore" id="sem-card">
+          <div class="sem-left">
+            <div class="sem-housing">
+              <div class="sem-bulb" id="sem-red"></div>
+              <div class="sem-bulb" id="sem-yellow"></div>
+              <div class="sem-bulb" id="sem-green"></div>
+            </div>
+          </div>
+          <div class="sem-center">
+            <div class="sem-big" id="occ-number">—</div>
+            <div class="sem-sub">de <strong id="occ-capacity">—</strong> lugares</div>
+            <div class="sem-badge" id="occ-badge">Cargando…</div>
+          </div>
+          <div class="sem-right">
+            <div class="donut-wrap">
+              <svg class="donut" viewBox="0 0 80 80">
+                <circle cx="40" cy="40" r="30" fill="none" stroke="var(--surface-2)" stroke-width="10"/>
+                <circle id="donut-fill" cx="40" cy="40" r="30" fill="none" stroke="var(--green)" stroke-width="10"
+                  stroke-linecap="round" stroke-dasharray="188.5" stroke-dashoffset="188.5"
+                  transform="rotate(-90 40 40)" style="transition:stroke-dashoffset 1s ease,stroke .5s ease"/>
+              </svg>
+              <span class="donut-pct" id="donut-pct">0%</span>
+            </div>
+          </div>
         </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val mono" id="lib-time">—</div>
-          <div class="stat-chip-lbl">Actualizado</div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="stat-chip-val green" id="lib-free">—</div><div class="stat-chip-lbl">Libres</div></div>
+          <div class="stat-chip"><div class="stat-chip-val" id="lib-cap">—</div><div class="stat-chip-lbl">Capacidad</div></div>
+          <div class="stat-chip"><div class="stat-chip-val mono" id="lib-time">—</div><div class="stat-chip-lbl">Actualizado</div></div>
+        </div>
+        <p class="section-label">Ocupación por piso</p>
+        <div class="card" style="padding:20px 24px">
+          <div id="floors-list" class="floors-list"></div>
+        </div>
+        <p class="section-label">Tráfico del día</p>
+        <div class="card chart-card">
+          <canvas id="history-chart" height="90"></canvas>
+        </div>
+      </section>
+
+      <!-- ══ BATHROOMS ══ -->
+      <section class="view" id="view-bathrooms">
+        <div class="view-hero">
+          <p class="view-eyebrow">Reportes comunitarios</p>
+          <h1 class="view-title">Baños</h1>
+          <button class="btn-hero" id="openModal">
+            <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
+            Nuevo reporte
+          </button>
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="stat-chip-val red" id="bath-total">—</div><div class="stat-chip-lbl">Activos</div></div>
+          <div class="stat-chip"><div class="stat-chip-val yellow" id="bath-progress">—</div><div class="stat-chip-lbl">En proceso</div></div>
+          <div class="stat-chip"><div class="stat-chip-val" id="bath-votes">—</div><div class="stat-chip-lbl">Votos</div></div>
+        </div>
+        <p class="section-label">Mayor urgencia primero</p>
+        <div id="reports-list" class="reports-list"></div>
+      </section>
+
+      <!-- ══ OUTLETS ══ -->
+      <section class="view" id="view-outlets">
+        <div class="view-hero">
+          <p class="view-eyebrow">Infraestructura</p>
+          <h1 class="view-title">Enchufes</h1>
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="stat-chip-val green" id="out-avail">—</div><div class="stat-chip-lbl">Disponibles</div></div>
+          <div class="stat-chip"><div class="stat-chip-val red" id="out-occ">—</div><div class="stat-chip-lbl">Ocupados</div></div>
+          <div class="stat-chip"><div class="stat-chip-val" id="out-total">—</div><div class="stat-chip-lbl">Total</div></div>
+        </div>
+        <p class="section-label">Plano del campus · toca para cambiar estado</p>
+        <div class="card map-card">
+          <div class="campus-map-container" id="outlets-map"></div>
+          <div class="map-legend">
+            <span class="leg"><span class="leg-dot green"></span>Disponible</span>
+            <span class="leg"><span class="leg-dot red"></span>Ocupado</span>
+          </div>
+        </div>
+        <p class="section-label">Lista de enchufes</p>
+        <div class="outlets-grid" id="outlets-grid"></div>
+      </section>
+
+      <!-- ══ WIFI ══ -->
+      <section class="view" id="view-wifi">
+        <div class="view-hero">
+          <p class="view-eyebrow">Conectividad</p>
+          <h1 class="view-title">Señal WiFi</h1>
+        </div>
+        <div class="stats-row">
+          <div class="stat-chip"><div class="stat-chip-val green" id="wifi-exc">—</div><div class="stat-chip-lbl">Excelente</div></div>
+          <div class="stat-chip"><div class="stat-chip-val yellow" id="wifi-good">—</div><div class="stat-chip-lbl">Buena</div></div>
+          <div class="stat-chip"><div class="stat-chip-val red" id="wifi-poor">—</div><div class="stat-chip-lbl">Débil</div></div>
+        </div>
+        <p class="section-label">Mapa de cobertura</p>
+        <div class="card map-card">
+          <div class="campus-map-container" id="wifi-map"></div>
+          <div class="map-legend">
+            <span class="leg"><span class="leg-dot green"></span>&gt;80%</span>
+            <span class="leg"><span class="leg-dot yellow"></span>&gt;60%</span>
+            <span class="leg"><span class="leg-dot orange"></span>&gt;40%</span>
+            <span class="leg"><span class="leg-dot red"></span>Débil</span>
+          </div>
+        </div>
+        <p class="section-label">Todas las zonas</p>
+        <div class="wifi-grid" id="wifi-grid"></div>
+      </section>
+
+      <!-- ══ PROFILE ══ -->
+      <section class="view" id="view-profile">
+        <div class="view-hero">
+          <p class="view-eyebrow">Mi cuenta</p>
+          <h1 class="view-title">Perfil</h1>
+        </div>
+
+        <!-- User card -->
+        <div class="card profile-card" id="profile-card">
+          <div class="profile-avatar" id="profile-avatar">?</div>
+          <div class="profile-info">
+            <div class="profile-name" id="profile-name">—</div>
+            <div class="profile-email" id="profile-email">—</div>
+            <div class="profile-role-badge" id="profile-role">—</div>
+          </div>
+        </div>
+
+        <!-- Impact stats -->
+        <p class="section-label">Mi impacto</p>
+        <div class="stats-row" id="impact-stats">
+          <div class="stat-chip"><div class="stat-chip-val" id="stat-reports">—</div><div class="stat-chip-lbl">Reportes</div></div>
+          <div class="stat-chip"><div class="stat-chip-val green" id="stat-resolved">—</div><div class="stat-chip-lbl">Resueltos</div></div>
+          <div class="stat-chip"><div class="stat-chip-val" id="stat-score">—</div><div class="stat-chip-lbl">Puntos</div></div>
+        </div>
+
+        <!-- Notifications panel -->
+        <div class="notif-header-row">
+          <p class="section-label" style="margin:0">Notificaciones</p>
+          <button class="btn-text" id="mark-all-read">Marcar todo como leído</button>
+        </div>
+        <div id="notif-list" class="notif-list"></div>
+
+        <!-- My reports history -->
+        <div class="history-header-row">
+          <p class="section-label" style="margin:0">Mis reportes</p>
+        </div>
+        <div id="my-reports-list" class="reports-list"></div>
+
+        <!-- Logout -->
+        <div class="profile-actions">
+          <button class="btn-danger" id="btn-logout">Cerrar sesión</button>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <nav class="bottom-nav" role="navigation">
+      <button class="nav-tab active" data-view="library">
+        <div class="nav-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M4 19V6.5C4 5.12 5.12 4 6.5 4H20V19H6.5C5.12 19 4 18.38 4 17V6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M4 17C4 15.62 5.12 15 6.5 15H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>Biblioteca</span>
+      </button>
+
+      <button class="nav-tab" data-view="bathrooms">
+        <div class="nav-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="7.5" r="3" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M3 20h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="nav-badge" id="bath-nav-badge"></span>
+        </div>
+        <span>Baños</span>
+      </button>
+
+      <button class="nav-tab" data-view="outlets">
+        <div class="nav-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <rect x="7" y="3" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M10 7v3M14 7v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M12 15v6M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <span>Enchufes</span>
+      </button>
+
+      <button class="nav-tab" data-view="wifi">
+        <div class="nav-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <path d="M2 8.5C5.5 5 9.5 3 12 3s6.5 2 10 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M5 11.5C7.5 9 9.6 8 12 8s4.5 1 7 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <path d="M8 14.5C9.5 13 10.6 12.5 12 12.5s2.5.5 4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+            <circle cx="12" cy="18.5" r="1.5" fill="currentColor"/>
+          </svg>
+        </div>
+        <span>WiFi</span>
+      </button>
+
+      <button class="nav-tab" data-view="profile">
+        <div class="nav-icon-wrap" style="position:relative">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          <span class="nav-badge" id="notif-nav-badge"></span>
+        </div>
+        <span>Perfil</span>
+      </button>
+    </nav>
+
+  </div><!-- /app-shell -->
+
+  <!-- ░░ NOTIFICATIONS PANEL ░░ -->
+  <div class="notif-panel-backdrop" id="notif-panel-backdrop">
+    <div class="notif-panel" id="notif-panel">
+      <div class="notif-panel-header">
+        <h3 class="notif-panel-title">Notificaciones</h3>
+        <div style="display:flex;gap:8px;align-items:center">
+          <button class="btn-text" id="panel-mark-all">Leer todo</button>
+          <button class="notif-panel-close" id="notif-panel-close">
+            <svg width="16" height="16" viewBox="0 0 16 16"><path d="M2 2l12 12M14 2 2 14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </button>
         </div>
       </div>
+      <div class="notif-panel-body" id="notif-panel-body"></div>
+    </div>
+  </div>
 
-      <p class="section-label">Ocupación por piso</p>
-      <div class="card" style="padding:20px 24px">
-        <div id="floors-list" class="floors-list"></div>
-      </div>
-
-      <p class="section-label">Tráfico del día</p>
-      <div class="card chart-card">
-        <canvas id="history-chart" height="90"></canvas>
-      </div>
-    </section>
-
-    <!-- ══ BATHROOMS ══ -->
-    <section class="view" id="view-bathrooms">
-      <div class="view-hero">
-        <p class="view-eyebrow">Reportes comunitarios</p>
-        <h1 class="view-title">Baños</h1>
-        <button class="btn-hero" id="openModal">
-          <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-          Nuevo reporte
-        </button>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-chip">
-          <div class="stat-chip-val red" id="bath-total">—</div>
-          <div class="stat-chip-lbl">Activos</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val yellow" id="bath-progress">—</div>
-          <div class="stat-chip-lbl">En proceso</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val" id="bath-votes">—</div>
-          <div class="stat-chip-lbl">Votos</div>
-        </div>
-      </div>
-
-      <p class="section-label">Mayor urgencia primero</p>
-      <div id="reports-list" class="reports-list"></div>
-    </section>
-
-    <!-- ══ OUTLETS ══ -->
-    <section class="view" id="view-outlets">
-      <div class="view-hero">
-        <p class="view-eyebrow">Infraestructura</p>
-        <h1 class="view-title">Enchufes</h1>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-chip">
-          <div class="stat-chip-val green" id="out-avail">—</div>
-          <div class="stat-chip-lbl">Disponibles</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val red" id="out-occ">—</div>
-          <div class="stat-chip-lbl">Ocupados</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val" id="out-total">—</div>
-          <div class="stat-chip-lbl">Total</div>
-        </div>
-      </div>
-
-      <p class="section-label">Plano del campus · toca para cambiar estado</p>
-      <div class="card map-card">
-        <div class="campus-map-container" id="outlets-map"></div>
-        <div class="map-legend">
-          <span class="leg"><span class="leg-dot green"></span>Disponible</span>
-          <span class="leg"><span class="leg-dot red"></span>Ocupado</span>
-        </div>
-      </div>
-
-      <p class="section-label">Lista de enchufes</p>
-      <div class="outlets-grid" id="outlets-grid"></div>
-    </section>
-
-    <!-- ══ WIFI ══ -->
-    <section class="view" id="view-wifi">
-      <div class="view-hero">
-        <p class="view-eyebrow">Conectividad</p>
-        <h1 class="view-title">Señal WiFi</h1>
-      </div>
-
-      <div class="stats-row">
-        <div class="stat-chip">
-          <div class="stat-chip-val green" id="wifi-exc">—</div>
-          <div class="stat-chip-lbl">Excelente</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val yellow" id="wifi-good">—</div>
-          <div class="stat-chip-lbl">Buena</div>
-        </div>
-        <div class="stat-chip">
-          <div class="stat-chip-val red" id="wifi-poor">—</div>
-          <div class="stat-chip-lbl">Débil</div>
-        </div>
-      </div>
-
-      <p class="section-label">Mapa de cobertura</p>
-      <div class="card map-card">
-        <div class="campus-map-container" id="wifi-map"></div>
-        <div class="map-legend">
-          <span class="leg"><span class="leg-dot green"></span>&gt;80%</span>
-          <span class="leg"><span class="leg-dot yellow"></span>&gt;60%</span>
-          <span class="leg"><span class="leg-dot orange"></span>&gt;40%</span>
-          <span class="leg"><span class="leg-dot red"></span>Débil</span>
-        </div>
-      </div>
-
-      <p class="section-label">Todas las zonas</p>
-      <div class="wifi-grid" id="wifi-grid"></div>
-    </section>
-
-  </main>
-
-  <!-- BOTTOM NAV -->
-  <nav class="bottom-nav" role="navigation">
-    <button class="nav-tab active" data-view="library">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M4 19V6.5C4 5.12 5.12 4 6.5 4H20V19H6.5C5.12 19 4 18.38 4 17V6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M4 17C4 15.62 5.12 15 6.5 15H20" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M8 8.5h8M8 11.5h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span>Biblioteca</span>
-    </button>
-
-    <button class="nav-tab" data-view="bathrooms">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <circle cx="12" cy="7.5" r="3" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M5.5 20v-2a6.5 6.5 0 0 1 13 0v2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M3 20h18" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-        <span class="nav-badge" id="bath-nav-badge"></span>
-      </div>
-      <span>Baños</span>
-    </button>
-
-    <button class="nav-tab" data-view="outlets">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <rect x="7" y="3" width="10" height="12" rx="2" stroke="currentColor" stroke-width="1.8"/>
-          <path d="M10 7v3M14 7v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M12 15v6M9 21h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <span>Enchufes</span>
-    </button>
-
-    <button class="nav-tab" data-view="wifi">
-      <div class="nav-icon-wrap">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-          <path d="M2 8.5C5.5 5 9.5 3 12 3s6.5 2 10 5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M5 11.5C7.5 9 9.6 8 12 8s4.5 1 7 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <path d="M8 14.5C9.5 13 10.6 12.5 12 12.5s2.5.5 4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
-          <circle cx="12" cy="18.5" r="1.5" fill="currentColor"/>
-        </svg>
-      </div>
-      <span>WiFi</span>
-    </button>
-  </nav>
-
-  <!-- MODAL -->
+  <!-- ░░ MODAL: NEW BATHROOM REPORT ░░ -->
   <div class="modal-backdrop" id="modal-backdrop">
     <div class="modal" role="dialog" aria-modal="true">
       <div class="modal-pill"></div>
@@ -281,7 +379,7 @@
     </div>
   </div>
 
-  <!-- TOAST -->
+  <!-- ░░ TOAST ░░ -->
   <div class="toast-wrap" id="toast-wrap"></div>
 
   <script src="app.js"></script>
